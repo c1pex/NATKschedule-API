@@ -4,7 +4,8 @@ using NATKschedule.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace NATKschedule.Controllers
+
+namespace CollegeSchedule.Controllers
 {
     [ApiController]
     [Route("api/schedule")]
@@ -17,11 +18,12 @@ namespace NATKschedule.Controllers
         }
 
         [HttpGet("group/{groupName}")]
-
         public async Task<IActionResult> GetSchedule(string groupName, DateTime start, DateTime end)
         {
+            // Вызываем бизнес-логику из сервиса
             var result = await _service.GetScheduleForGroup(groupName, start.Date, end.Date);
 
+            // Возвращаем результат со статусом 200 OK
             return Ok(result);
         }
     }

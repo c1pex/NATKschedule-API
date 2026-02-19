@@ -2,6 +2,7 @@
 using NATKschedule.DTO;
 using NATKschedule.Models;
 using Microsoft.EntityFrameworkCore;
+using NATKschedule.Services;
 
 namespace NATKschedule.Services
 {
@@ -24,10 +25,9 @@ namespace NATKschedule.Services
             var group = await GetGroupByName(groupName);
             var schedules = await LoadSchedules(group.GroupId, startDate, endDate);
 
-            return BuildScheduleDTO(startDate, endDate, schedules);
+            return BuildScheduleDto(startDate, endDate, schedules);
         }
 
-        
         public async Task<List<string>> GetAllGroups()
         {
             return await _db.StudentGroups
@@ -77,7 +77,7 @@ namespace NATKschedule.Services
                 .ToListAsync();
         }
 
-        private static List<ScheduleByDateDto> BuildScheduleDTO(
+        private static List<ScheduleByDateDto> BuildScheduleDto(
             DateTime startDate,
             DateTime endDate,
             List<Schedule> schedules)
@@ -92,24 +92,23 @@ namespace NATKschedule.Services
 
                 if (!scheduleByDate.TryGetValue(date, out var daySchedules))
                 {
-                    result.Add(BuildEmptyDayDTO(date));
+                    result.Add(BuildEmptyDayDto(date));
                 }
                 else
                 {
-                    result.Add(BuildDayDTO(daySchedules));
+                    result.Add(BuildDayDto(daySchedules));
                 }
             }
 
             return result;
         }
 
-        private static LessonDto BuildLessonDTO(
+        private static LessonDto BuildLessonDto(
             IGrouping<dynamic, Schedule> lessonGroup)
         {
             var lessonDto = new LessonDto
             {
                 LessonNumber = lessonGroup.Key.LessonNumber,
-                // ✅ Исправлен формат времени
                 Time = $"{lessonGroup.Key.TimeStart:HH\\:mm}-{lessonGroup.Key.TimeEnd:HH\\:mm}",
                 GroupParts = new Dictionary<LessonGroupPart, LessonPartDto?>()
             };
@@ -141,7 +140,7 @@ namespace NATKschedule.Services
                 .ToDictionary(g => g.Key, g => g.ToList());
         }
 
-        private static ScheduleByDateDto BuildDayDTO(List<Schedule> daySchedules)
+        private static ScheduleByDateDto BuildDayDto(List<Schedule> daySchedules)
         {
             var lessons = daySchedules
                 .GroupBy(s => new
@@ -150,7 +149,7 @@ namespace NATKschedule.Services
                     s.LessonTime.TimeStart,
                     s.LessonTime.TimeEnd
                 })
-                .Select(BuildLessonDTO)
+                .Select(BuildLessonDto)
                 .ToList();
 
             return new ScheduleByDateDto
@@ -161,7 +160,7 @@ namespace NATKschedule.Services
             };
         }
 
-        private static ScheduleByDateDto BuildEmptyDayDTO(DateTime date)
+        private static ScheduleByDateDto BuildEmptyDayDto(DateTime date)
         {
             return new ScheduleByDateDto
             {
